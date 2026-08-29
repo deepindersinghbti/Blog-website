@@ -26,19 +26,25 @@ app.use(
 );
 
 mongoose.set("strictQuery", false);
-mongoose.connect(keys.MONGO_URI)
+if (keys.MONGO_URI) {
+  mongoose.connect(keys.MONGO_URI).catch((error) => {
+    console.error("MongoDB connection failed:", error.message);
+  });
+}
 
-var store = new MongoDBStore(
-  {
-    uri: keys.MONGO_URI,
-    collection: "mySessions",
-  },
-  function (error) {
-    if (error) {
-      // console.log("err", error);
+if (keys.MONGO_URI) {
+  new MongoDBStore(
+    {
+      uri: keys.MONGO_URI,
+      collection: "mySessions",
+    },
+    function (error) {
+      if (error) {
+        // console.log("err", error);
+      }
     }
-  }
-);
+  );
+}
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -53,7 +59,7 @@ app.set("trust proxy", 1)
 app.use(cookieParser())
 app.use(session({
   proxy: true,
-  secret: keys.COOKIE_KEY,
+  secret: keys.COOKIE_KEY || "local-development-secret",
   resave: false,
   saveUninitialized: true,
   cookie: {
