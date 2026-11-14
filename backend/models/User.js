@@ -11,15 +11,7 @@ const userSchema = new Schema(
     },
     password: {
       type: String,
-      required: function () { return !this.googleId },
-    },
-    verify: {
-      type: Boolean,
-      default: false
-    },
-    googleId: {
-      type: String,
-      required: function () { return !this.password },
+      required: true,
     },
     picture: {
       type: String,

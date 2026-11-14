@@ -2,15 +2,10 @@ import { useState } from "react";
 import { TfiEmail } from "react-icons/tfi";
 import { CiLock } from "react-icons/ci";
 import { TiUser } from "react-icons/ti";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import Cookies from "js-cookie";
-import {
-  checkifverify,
-  sendmail,
-  checkotpv
-} from "../helpers/index"
 
 function Auth() {
   const dispatch = useDispatch();
@@ -18,9 +13,6 @@ function Auth() {
   const [state, setState] = useState("Sign Up");
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
-  const [otpv, cotpv] = useState("");
-  const [vo, svo] = useState(false);
-  const [cs, scs] = useState("");
   const userInfos = {
     email: "",
     password: "",
@@ -36,54 +28,21 @@ function Auth() {
   };
 
   const handleSubmit = async () => {
-    var temail = email.toLowerCase()
-
+    const temail = email.toLowerCase();
     if (state === "Log In") {
-      try {
-        if (!temail || !password) {
-          setError('All feilds are required !')
-          return;
-        }
-        const data = await checkifverify(temail);
-        if (data.msg === "ok") {
-
-        }
-        else if (
-          data.msg === 'ne'
-        ) {
-          setError("Please Sign Up First ");
-          return;
-        }
-        else {
-          setError("Please Sign up and Verify Your Email ");
-          return;
-        }
-      } catch (error) {
-        // console.log(error);
+      if (!temail || !password) {
+        setError("All fields are required !");
+        return;
       }
       logIn();
     } else {
       if (!name || !temail || !password) {
-        setError('All feilds are required !')
+        setError("All fields are required !");
         return;
       }
-      if (vo === false) {
-        setError('An OTP has been send to your mail for verification')
-        const datas = await sendmail(temail, name);
-        scs(true);
-      }
+      signUp();
     }
   };
-  const checkotp = async () => {
-    try {
-      var temail = email.toLowerCase()
-
-      const data = await checkotpv(temail, otpv);
-    } catch (error) {
-      setError('An Error Occurred')
-      // console.log("cannot verify otp")
-    }
-  }
   const logIn = async () => {
     try {
       var temail = email.toLowerCase()
@@ -131,26 +90,6 @@ function Auth() {
       setError(error.response.data.message);
     }
   };
-  const verifyOTP = async () => {
-    try {
-      var temail = email.toLowerCase()
-      const data = await checkotpv(temail, otpv);
-      if (data.msg === 'ok') {
-        setError("OTP Matched");
-        signUp();
-      }
-      else {
-        setError("OTP do not match");
-      }
-    } catch (error) {
-      setError("ERROR OCCURRED!");
-      // console.log("error in matching")
-    }
-  }
-  const signUpWithGoogle = () => {
-    window.open(`${process.env.REACT_APP_BACKEND_URL}/auth/google`, "_self");
-  }
-
   return (
     <div className="containerzz">
       <div className="auth_wrapper">
@@ -187,34 +126,6 @@ function Auth() {
             Sign Up
           </div>
         </div>
-        {state === "Log In" ? (
-          <div>
-            {/* <div className="social google">
-              <img src="/google.jpg" alt="google" />
-              <span onClick={() => signUpWithGoogle()} >Log in with Google</span>
-            </div>
-            <div className="social facebook">
-              <img src="/Facebook.png" alt="facebook" />
-              <span>Log in with Facebook</span>
-            </div> */}
-            <div className="social google">
-              <img src="/google.jpg" alt="google" />
-              {/* <GoogleOAuthProvider clientId={`${process.env.GOOGLE_CLIENT}`}>...</GoogleOAuthProvider>; */}
-              <span onClick={() => signUpWithGoogle()}>Sign In with Google</span>
-            </div>
-          </div>
-        ) : (
-          <div>
-            <div className="social google">
-              <img src="/google.jpg" alt="google" />
-              {/* <GoogleOAuthProvider clientId={`${process.env.GOOGLE_CLIENT}`}>...</GoogleOAuthProvider>; */}
-              <span onClick={() => signUpWithGoogle()}>Sign Up with Google</span>
-            </div>
-          </div>
-          
-        )}
-        {/* <span className="or">or</span> */}
-        OR
         <form action="">
           {state === "Sign Up" ? (
             <div className="input">
@@ -250,39 +161,18 @@ function Auth() {
               onChange={handleRegisterChange}
             />
           </div>
-          {(cs) && state === "Sign Up" ?
-            <div className="input">
-              <input
-                type="number"
-                name="OTP"
-                placeholder="OTP"
-                value={otpv}
-                onChange={(e) => { cotpv(e.target.value) }}
-              />
-            </div>
-            : <></>}
         </form>
         {error && <span className="errorValidation" >{error}</span>}
         {success && <span className="RegisterSuccess" >{success}</span>}
-        {state === "Sign Up" ? (
+        {state === "Sign Up" && (
           <div className="dilougue">
             By signing up, you agree to our <b>terms of service</b> and
             <b>privacy policy</b>. No credit card required.
           </div>
-        ) : (
-          <div className="forget">
-            <Link to="/resetPassword">Don't remember your password?</Link>
-          </div>
         )}
-        {(cs) && state === "Sign Up" ?
-          <div className="footer" onClick={verifyOTP}>
-            {state === "Sign Up" ? "Verify OTP" : "LOG IN"}
-          </div>
-          :
-          <div className="footer" onClick={handleSubmit}>
-            {state === "Sign Up" ? "SIGN UP FOR FREE" : "LOG IN"}
-          </div>
-        }
+        <div className="footer" onClick={handleSubmit}>
+          {state === "Sign Up" ? "SIGN UP FOR FREE" : "LOG IN"}
+        </div>
       </div>
     </div>
   );
