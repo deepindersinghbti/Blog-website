@@ -196,7 +196,7 @@ exports.allPost = async (req, res) => {
       });
     }
   } catch (error) {
-    // console.log(error);
-    res.status(400).json(error);
+    console.error("getallpost failed:", error.message);
+    res.status(400).json({ message: error.message });
   }
 };

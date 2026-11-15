@@ -14,6 +14,18 @@ app.use(cors({ origin: true, credentials: true }));
 
 mongoose.set("strictQuery", false);
 if (keys.MONGO_URI) {
+  // mongodb+srv:// needs a DNS SRV lookup, which some local resolvers/ISPs refuse
+  // (querySrv ECONNREFUSED). Use public DNS for Node's resolver; this does not
+  // change the system DNS. Set DNS_SERVERS=a,b to override.
+  if (keys.MONGO_URI.startsWith("mongodb+srv://")) {
+    try {
+      require("dns").setServers(
+        (process.env.DNS_SERVERS || "8.8.8.8,1.1.1.1").split(",").map((s) => s.trim())
+      );
+    } catch (e) {
+      console.warn("Could not set DNS servers:", e.message);
+    }
+  }
   mongoose
     .connect(keys.MONGO_URI, { serverSelectionTimeoutMS: 10000 })
     .then((conn) => {
